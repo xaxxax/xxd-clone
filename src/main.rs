@@ -57,11 +57,12 @@ fn build_message(data: Vec<&str>) -> String {
     for group in data.iter() {
         let mut sum = calculate_binary_sum(group);
 
-        if sum > 126 {
+        if (sum < 32) | (sum > 126) {
             msg.push('.');
+        } else {
+            msg.push(sum as char);
         }
 
-        msg.push(sum as char);
         sum = 0;
     }
 
@@ -74,11 +75,12 @@ fn build_message_with_horner(data: Vec<&str>) -> String {
     for group in data.iter() {
         let mut sum = horner_method(group);
 
-        if sum > 126 {
+        if (sum < 32) | (sum > 126) {
             msg.push('.');
+        } else {
+            msg.push(sum as char);
         }
 
-        msg.push(sum as char);
         sum = 0;
     }
 
