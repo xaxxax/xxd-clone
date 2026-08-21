@@ -10,6 +10,10 @@ use std::fs;
 // create list of HEX codes, let index be the sum of N code
 // then, get code for N sum
 
+const HEX: [char; 16] = [
+    '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F',
+];
+
 fn main() -> Result<(), Box<dyn Error>> {
     let byte_content = fs::read_to_string("bytes.txt")?;
     let byte_array1: Vec<&str> = byte_content.split_whitespace().collect();
@@ -17,25 +21,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let msg = build_message(byte_array1);
     println!("{}", msg);
 
-    let byte_array2: Vec<&str> = byte_content.split_whitespace().collect();
-
-    let horner = build_message_with_horner(byte_array2);
-    println!("{}", horner);
-
     Ok(())
-}
-
-fn calculate_binary_sum(group: &str) -> u8 {
-    let mut sum: usize = 0;
-
-    for i in 0..group.len() {
-        let exp = ((group.len() - 1) - i) as u32;
-        if group.chars().nth(i).unwrap() == '1' {
-            sum += (2 as usize).pow(exp);
-        }
-    }
-
-    return sum as u8;
 }
 
 fn horner_method(group: &str) -> u8 {
@@ -51,26 +37,31 @@ fn horner_method(group: &str) -> u8 {
     return sum as u8;
 }
 
-fn build_message(data: Vec<&str>) -> String {
+fn to_hex(sum: usize) -> String {
+    // if sum <= 15 (0X), take sum look up return 0X
+    // if sum > 16, sum / 16, take remainder and mod
+
+    if sum <= 15 {
+        let mut msg = String::from("0");
+
+        msg.push(HEX[sum]);
+        msg.push(' ');
+
+        return msg;
+    }
+
     let mut msg = String::new();
 
-    for group in data.iter() {
-        let mut sum = calculate_binary_sum(group);
-
-        if (sum < 32) | (sum > 126) {
-            msg.push('.');
-        } else {
-            msg.push(sum as char);
-        }
-
-        sum = 0;
-    }
+    msg.push(HEX[sum / 16]);
+    msg.push(HEX[sum % 16]);
+    msg.push(' ');
 
     return msg;
 }
 
-fn build_message_with_horner(data: Vec<&str>) -> String {
+fn build_message(data: Vec<&str>) -> String {
     let mut msg = String::new();
+    let mut hex = String::new();
 
     for group in data.iter() {
         let mut sum = horner_method(group);
@@ -81,8 +72,12 @@ fn build_message_with_horner(data: Vec<&str>) -> String {
             msg.push(sum as char);
         }
 
+        hex.push_str(&to_hex(sum as usize));
+
         sum = 0;
     }
+
+    println!("{}", hex);
 
     return msg;
 }
